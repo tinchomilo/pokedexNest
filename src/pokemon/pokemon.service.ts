@@ -5,6 +5,7 @@ import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { Pokemon } from './entities/pokemon.entity';
 import { Model, isValidObjectId } from 'mongoose';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class PokemonService {
@@ -25,8 +26,15 @@ export class PokemonService {
     }
   }
 
-  async findAll() {
-    return this.pokemonModel.find();
+  async findAll( paginationDto: PaginationDto) {
+
+    const { limit = 20, offset = 0 } = paginationDto;
+    return this.pokemonModel.find()
+      .limit( limit )
+      .skip( offset )
+      .sort( {
+        no: 'asc'
+      } );
   }
 
   async findOne(term: string) {
@@ -70,7 +78,7 @@ export class PokemonService {
     // otra manera
     // return await this.pokemonModel.findByIdAndDelete( id ) ;
 
-    //la más optima porque solo realizo una consulta a la base d e datos. Desestructuro 
+    //la más optima porque solo realizo una consulta a la base d e datos. Desestructuro
     const { deletedCount } = await this.pokemonModel.deleteOne({_id: id});
     if( deletedCount === 0)
       throw new BadRequestException(`no existe un pokemon con el id ${id}`);
